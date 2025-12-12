@@ -23,9 +23,9 @@ export const Menu: React.FC<MenuProps> = ({ gameState, startGame, score, onUpgra
             <p className="text-xl text-cyan-500 tracking-[0.5em] mb-8 font-light">PROTOCOL OMEGA</p>
             
             <div className="space-y-4 mb-12 text-gray-400 font-mono text-sm border-l-2 border-cyan-800 pl-4 text-left mx-auto max-w-lg">
-              <p className="text-cyan-400 font-bold">> IDENTITY RECORD: AXIOS-7</p>
-              <p>> ORIGIN: [REDACTED]</p>
-              <p>> STATUS: SYNTHETIC-ORGANIC HYBRID. AWAKENED.</p>
+              <p className="text-cyan-400 font-bold">{`> IDENTITY RECORD: AXIOS-7`}</p>
+              <p>{`> ORIGIN: [REDACTED]`}</p>
+              <p>{`> STATUS: SYNTHETIC-ORGANIC HYBRID. AWAKENED.`}</p>
               <p className="mt-4 italic text-gray-500">
                 "They built me from the enemy's own flesh and steel. Now the lab is collapsing, and I am the only thing standing between the Scourge and the surface."
               </p>
