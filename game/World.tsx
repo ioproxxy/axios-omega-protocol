@@ -157,7 +157,7 @@ export const World: React.FC<WorldProps> = ({ gameState, onGameOver, onVictory, 
   return (
     <>
       <group>
-        <Level wave={stats.wave} />
+        <Level />
         <Destructibles 
             items={destructibles} 
             projectiles={projectiles} 

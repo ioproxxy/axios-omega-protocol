@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameState, WeaponStats } from '../types';
-import { Play, RotateCcw, ShieldAlert, Zap, Crosshair, Flame, Cpu } from 'lucide-react';
+import { Play, RotateCcw, ShieldAlert, Zap, Crosshair, Flame } from 'lucide-react';
 
 interface MenuProps {
   gameState: GameState;
@@ -22,13 +22,11 @@ export const Menu: React.FC<MenuProps> = ({ gameState, startGame, score, onUpgra
             </h1>
             <p className="text-xl text-cyan-500 tracking-[0.5em] mb-8 font-light">PROTOCOL OMEGA</p>
             
-            <div className="space-y-4 mb-12 text-gray-400 font-mono text-sm border-l-2 border-cyan-800 pl-4 text-left mx-auto max-w-lg">
-              <p className="text-cyan-400 font-bold">> IDENTITY RECORD: AXIOS-7</p>
-              <p>> ORIGIN: [REDACTED]</p>
-              <p>> STATUS: SYNTHETIC-ORGANIC HYBRID. AWAKENED.</p>
-              <p className="mt-4 italic text-gray-500">
-                "They built me from the enemy's own flesh and steel. Now the lab is collapsing, and I am the only thing standing between the Scourge and the surface."
-              </p>
+            <div className="space-y-4 mb-12 text-gray-400 font-mono text-sm border-l-2 border-cyan-800 pl-4 text-left mx-auto max-w-md">
+              <p>> SYSTEM BOOT...</p>
+              <p>> FACILITY STATUS: CRITICAL</p>
+              <p>> THREAT DETECTED: THE SCOURGE</p>
+              <p>> MISSION: SURVIVE. BREACH. ESCAPE.</p>
             </div>
 
             <button 
@@ -36,7 +34,7 @@ export const Menu: React.FC<MenuProps> = ({ gameState, startGame, score, onUpgra
               className="group relative px-8 py-4 bg-cyan-900/20 hover:bg-cyan-500/20 border border-cyan-500 text-cyan-400 hover:text-white transition-all duration-300 uppercase tracking-widest font-bold text-lg w-full md:w-auto"
             >
               <span className="flex items-center justify-center gap-3">
-                <Play className="w-5 h-5" /> Initialize System
+                <Play className="w-5 h-5" /> Initialize
               </span>
               <div className="absolute inset-0 bg-cyan-400/10 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
             </button>
@@ -68,11 +66,8 @@ export const Menu: React.FC<MenuProps> = ({ gameState, startGame, score, onUpgra
 
         {gameState === GameState.UPGRADE_MENU && onUpgrade && (
           <div className="animate-in fade-in zoom-in duration-300">
-             <div className="flex items-center justify-center gap-3 mb-2">
-                <Cpu className="w-8 h-8 text-yellow-400" />
-                <h2 className="text-4xl font-bold text-yellow-400 tracking-tight">ADAPTATION REQUIRED</h2>
-             </div>
-             <p className="text-gray-400 mb-8 font-mono">SELECT CORE MODIFICATION</p>
+             <h2 className="text-4xl font-bold text-yellow-400 mb-2 tracking-tight">WAVE COMPLETE</h2>
+             <p className="text-gray-400 mb-8 font-mono">SELECT WEAPON MODIFICATION</p>
              
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 

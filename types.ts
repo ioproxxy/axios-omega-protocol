@@ -12,16 +12,12 @@ export interface Vector3 {
   z: number;
 }
 
-export type EnemyType = 'drone' | 'parasite' | 'hybrid' | 'boss';
-
 export interface Enemy {
   id: string;
   position: Vector3;
   health: number;
-  maxHealth: number;
   speed: number;
-  type: EnemyType;
-  damage: number;
+  type: 'drone' | 'scourge_walker';
 }
 
 export interface Bullet {
@@ -60,11 +56,4 @@ export interface GameStats {
   ammo: number;
   score: number;
   wave: number;
-}
-
-export interface LogMessage {
-  id: string;
-  text: string;
-  type: 'SYSTEM' | 'MEMORY' | 'WARNING';
-  timestamp: number;
 }

@@ -1,16 +1,8 @@
 import React, { useMemo } from 'react';
 import * as THREE from 'three';
-import { LEVEL_MAP, TILE_SIZE, WALL_HEIGHT, ZONE_CONFIG } from '../constants';
+import { LEVEL_MAP, TILE_SIZE, WALL_HEIGHT } from '../constants';
 
-interface LevelProps {
-  wave: number;
-}
-
-export const Level: React.FC<LevelProps> = ({ wave }) => {
-  // Determine Zone
-  const zoneId = wave >= 5 ? 3 : wave >= 3 ? 2 : 1;
-  const config = ZONE_CONFIG[zoneId as keyof typeof ZONE_CONFIG];
-
+export const Level: React.FC = () => {
   const { walls, floor } = useMemo(() => {
     const wallGeoms: React.ReactElement[] = [];
     
@@ -21,7 +13,7 @@ export const Level: React.FC<LevelProps> = ({ wave }) => {
     const floorMesh = (
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[mapWidth, mapDepth]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.4} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.2} />
       </mesh>
     );
 
@@ -29,7 +21,7 @@ export const Level: React.FC<LevelProps> = ({ wave }) => {
     const ceilingMesh = (
         <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_HEIGHT, 0]}>
           <planeGeometry args={[mapWidth, mapDepth]} />
-          <meshStandardMaterial color="#050505" emissive="#000000" />
+          <meshStandardMaterial color="#0a0a0a" emissive="#050505" />
         </mesh>
       );
 
@@ -44,20 +36,15 @@ export const Level: React.FC<LevelProps> = ({ wave }) => {
             <mesh key={`wall-${x}-${z}`} position={[posX, WALL_HEIGHT / 2, posZ]} castShadow receiveShadow>
               <boxGeometry args={[TILE_SIZE, WALL_HEIGHT, TILE_SIZE]} />
               <meshStandardMaterial 
-                color={config.wallColor} 
-                roughness={0.4} 
-                metalness={0.6}
+                color="#333" 
+                roughness={0.5} 
+                metalness={0.7}
+                map={null} 
               />
-              {/* Neon Trim */}
+              {/* Add some neon trim to walls */}
               <mesh position={[0, -WALL_HEIGHT/2 + 0.1, TILE_SIZE/2 + 0.01]}>
                  <boxGeometry args={[TILE_SIZE - 0.2, 0.2, 0.05]} />
-                 <meshBasicMaterial color={config.lightColor} toneMapped={false} />
-                 <pointLight distance={3} intensity={0.5} color={config.lightColor} />
-              </mesh>
-              {/* Vertical accent */}
-              <mesh position={[TILE_SIZE/2 + 0.01, 0, 0]}>
-                 <boxGeometry args={[0.05, WALL_HEIGHT - 0.5, 0.2]} />
-                 <meshBasicMaterial color={config.lightColor} toneMapped={false} />
+                 <meshBasicMaterial color="#00ffcc" />
               </mesh>
             </mesh>
           );
@@ -66,12 +53,13 @@ export const Level: React.FC<LevelProps> = ({ wave }) => {
     });
 
     return { walls: wallGeoms, floor: [floorMesh, ceilingMesh] };
-  }, [config]);
+  }, []);
 
   return (
     <group>
       {floor}
       {walls}
+      {/* Ambient particles or details could go here */}
     </group>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { LEVEL_MAP, TILE_SIZE, ENEMY_SPAWN_RATE } from '../constants';
-import { Enemy, Bullet, EnemyType } from '../types';
+import { Enemy, Bullet } from '../types';
 import { soundManager } from '../utils/SoundManager';
 
 interface EnemyManagerProps {
@@ -29,7 +29,7 @@ export const EnemyManager: React.FC<EnemyManagerProps> = ({
   
   // Wave state
   const enemiesSpawned = useRef(0);
-  const enemiesToSpawn = wave >= 5 ? 1 : 8 + (wave * 3); // 1 boss on wave 5, else normal scaling
+  const enemiesToSpawn = 5 + (wave * 5); // Example scaling
   const waveCompletedRef = useRef(false);
 
   // Reset wave tracking when wave changes
@@ -49,11 +49,10 @@ export const EnemyManager: React.FC<EnemyManagerProps> = ({
     }
 
     const time = state.clock.getElapsedTime() * 1000;
-    // Dynamic spawn rate based on wave, Boss wave stops spawning after boss appears
-    const isBossWave = wave >= 5;
-    const spawnRate = isBossWave ? 1000 : Math.max(500, ENEMY_SPAWN_RATE - (wave * 150));
+    // Dynamic spawn rate based on wave
+    const spawnRate = Math.max(500, ENEMY_SPAWN_RATE - (wave * 100));
 
-    if (time - lastSpawnTime.current > spawnRate && enemies.length < 25 && enemiesSpawned.current < enemiesToSpawn) {
+    if (time - lastSpawnTime.current > spawnRate && enemies.length < 20 && enemiesSpawned.current < enemiesToSpawn) {
       lastSpawnTime.current = time;
       spawnEnemy();
     }
@@ -81,57 +80,16 @@ export const EnemyManager: React.FC<EnemyManagerProps> = ({
         if (dist < 10) return;
     }
 
-    // Determine Enemy Type based on Wave/Zone
-    let type: EnemyType = 'drone';
-    let baseHealth = 100;
-    let baseSpeed = 4;
-    let baseDamage = 10;
-    let yPos = 1.5;
+    // Scale enemy stats with wave
+    const healthMult = 1 + (wave * 0.2);
+    const speedMult = 1 + (wave * 0.05);
 
-    if (wave >= 5) {
-        // BOSS WAVE
-        type = 'boss';
-        baseHealth = 2000;
-        baseSpeed = 2;
-        baseDamage = 50;
-        yPos = 3; // Taller
-    } else if (wave >= 3) {
-        // ZONE 2: Research (Drones, Parasites, Hybrids)
-        const rand = Math.random();
-        if (rand < 0.3) {
-            type = 'hybrid';
-            baseHealth = 250;
-            baseSpeed = 3;
-            baseDamage = 20;
-        } else if (rand < 0.6) {
-            type = 'parasite';
-            baseHealth = 60;
-            baseSpeed = 7;
-            baseDamage = 5;
-            yPos = 0.5; // Low to ground
-        }
-    } else {
-        // ZONE 1: Cryo (Mostly Drones, some Parasites)
-        if (Math.random() < 0.2) {
-             type = 'parasite';
-             baseHealth = 50;
-             baseSpeed = 6;
-             baseDamage = 5;
-             yPos = 0.5;
-        }
-    }
-    
-    // Slight random variation
-    const healthMult = 1 + (wave * 0.1);
-    
     const newEnemy: Enemy = {
       id: Math.random().toString(),
-      position: { x: posX, y: yPos, z: posZ },
-      health: baseHealth * healthMult,
-      maxHealth: baseHealth * healthMult,
-      speed: baseSpeed * (0.9 + Math.random() * 0.2),
-      type: type,
-      damage: baseDamage
+      position: { x: posX, y: 1.5, z: posZ },
+      health: 100 * healthMult,
+      speed: (2 + Math.random() * 2) * speedMult,
+      type: Math.random() > 0.8 ? 'scourge_walker' : 'drone'
     };
 
     setEnemies(prev => [...prev, newEnemy]);
@@ -150,43 +108,27 @@ export const EnemyManager: React.FC<EnemyManagerProps> = ({
         const dirToPlayer = new THREE.Vector3().subVectors(playerPos, enemyPos);
         const distToPlayer = dirToPlayer.length();
 
-        // Behavior based on type
-        let moveSpeed = enemy.speed;
-        
-        // Drone hovers
-        if (enemy.type === 'drone') {
-            enemyPos.y = 2 + Math.sin(state.clock.elapsedTime * 2 + parseInt(enemy.id)) * 0.5;
-        }
-
         // Move towards player
-        if (distToPlayer > (enemy.type === 'boss' ? 4 : 1.5)) {
-          dirToPlayer.normalize().multiplyScalar(moveSpeed * delta);
+        if (distToPlayer > 1.5) {
+          dirToPlayer.normalize().multiplyScalar(enemy.speed * delta);
           enemyPos.add(dirToPlayer);
         } else {
           // Attack Player
-          // Boss hits harder but slower (simulated by frame rate damage accumulation, we reduce it for boss)
-          const damageMult = enemy.type === 'boss' ? 0.2 : 1.0; 
-          onPlayerHit(enemy.damage * delta * damageMult); 
-          if (Math.random() < 0.05) soundManager.playPlayerDamage(); 
+          onPlayerHit(0.5); // Damage per frame close contact
+          if (Math.random() < 0.1) soundManager.playPlayerDamage(); // Limit sound frequency
         }
 
         // Projectile Collisions
         projectiles.forEach(proj => {
             const projPos = new THREE.Vector3(proj.position.x, proj.position.y, proj.position.z);
-            // Larger hitbox for boss
-            const hitDist = enemy.type === 'boss' ? 3.0 : 1.5;
             const dist = projPos.distanceTo(enemyPos);
-            
-            if (dist < hitDist) {
-                enemy.health -= proj.damage;
+            if (dist < 1.5) {
+                enemy.health -= proj.damage; // Use dynamic bullet damage
                 onRemoveProjectile(proj.id);
                 soundManager.playEnemyDamage();
-                
-                // Knockback (Boss is immune)
-                if (enemy.type !== 'boss') {
-                    const knockback = dirToPlayer.clone().normalize().multiplyScalar(-0.5);
-                    enemyPos.add(knockback);
-                }
+                // Knockback
+                const knockback = dirToPlayer.clone().normalize().multiplyScalar(-1);
+                enemyPos.add(knockback);
             }
         });
 
@@ -197,9 +139,7 @@ export const EnemyManager: React.FC<EnemyManagerProps> = ({
       const alive = nextEnemies.filter(e => {
           if (e.health <= 0) {
               const pos = new THREE.Vector3(e.position.x, e.position.y, e.position.z);
-              // Boss gives massive score
-              const points = e.type === 'boss' ? 5000 : e.type === 'hybrid' ? 300 : 100;
-              onEnemyKilled(points, pos);
+              onEnemyKilled(100, pos);
               soundManager.playEnemyDeath();
               return false;
           }
@@ -220,89 +160,26 @@ export const EnemyManager: React.FC<EnemyManagerProps> = ({
 };
 
 const EnemyMesh: React.FC<{ enemy: Enemy }> = ({ enemy }) => {
-  const meshRef = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-      if (meshRef.current) {
-          // Look at player logic could go here, for now just simple idle anims
-          if (enemy.type === 'drone') {
-              meshRef.current.rotation.y += 0.05;
-          } else if (enemy.type === 'parasite') {
-               meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 15) * 0.2;
-          }
-      }
-  });
-
-  const getMaterial = () => {
-      switch (enemy.type) {
-          case 'boss': return <meshStandardMaterial color="#330000" emissive="#ff0000" emissiveIntensity={0.5} />;
-          case 'parasite': return <meshStandardMaterial color="#00ff00" roughness={0.1} />;
-          case 'hybrid': return <meshStandardMaterial color="#884400" roughness={0.5} />;
-          default: return <meshStandardMaterial color="#0099ff" emissive="#002244" />;
-      }
-  };
-
   return (
-    <group ref={meshRef} position={[enemy.position.x, enemy.position.y, enemy.position.z]}>
-      
-      {/* SCOURGE BEAST (BOSS) */}
-      {enemy.type === 'boss' && (
-          <group scale={[3, 3, 3]}>
-              <mesh position={[0, 0.5, 0]}>
-                  <dodecahedronGeometry args={[1]} />
-                  {getMaterial()}
-              </mesh>
-              {/* Glowing Core */}
-              <pointLight color="red" distance={10} intensity={2} />
-          </group>
-      )}
-
-      {/* DRONE */}
-      {enemy.type === 'drone' && (
-          <group>
-            <mesh>
-                <icosahedronGeometry args={[0.5, 0]} />
-                {getMaterial()}
-            </mesh>
-            <mesh position={[0, 0, 0.4]}>
-                <sphereGeometry args={[0.2]} />
-                <meshBasicMaterial color="cyan" />
-            </mesh>
-          </group>
-      )}
-
-      {/* PARASITE */}
-      {enemy.type === 'parasite' && (
-          <group scale={[0.5, 0.5, 0.5]}>
-              <mesh position={[0, -0.5, 0]}>
-                  <octahedronGeometry args={[1]} />
-                  {getMaterial()}
-              </mesh>
-          </group>
-      )}
-
-      {/* HYBRID */}
-      {enemy.type === 'hybrid' && (
-          <group>
-              <mesh position={[0, 0, 0]}>
-                  <capsuleGeometry args={[0.4, 1.2, 4, 8]} />
-                  {getMaterial()}
-              </mesh>
-              {/* Visor */}
-              <mesh position={[0, 0.4, 0.3]}>
-                  <boxGeometry args={[0.5, 0.2, 0.2]} />
-                  <meshBasicMaterial color="orange" />
-              </mesh>
-          </group>
-      )}
-      
-      {/* Health Bar (Simple) */}
-      {enemy.health < enemy.maxHealth && (
-          <mesh position={[0, enemy.type === 'boss' ? 4 : 1.5, 0]}>
-              <planeGeometry args={[1 * (enemy.health / enemy.maxHealth), 0.1]} />
-              <meshBasicMaterial color="red" />
-          </mesh>
-      )}
+    <group position={[enemy.position.x, enemy.position.y, enemy.position.z]}>
+      {/* Main Body */}
+      <mesh castShadow>
+        {enemy.type === 'drone' ? (
+          <icosahedronGeometry args={[0.8, 0]} />
+        ) : (
+          <boxGeometry args={[1, 2, 1]} />
+        )}
+        <meshStandardMaterial 
+          color={enemy.type === 'drone' ? "#ff3333" : "#ff6600"} 
+          emissive={enemy.type === 'drone' ? "#550000" : "#331100"}
+          roughness={0.2}
+        />
+      </mesh>
+      {/* Eye / Core */}
+      <mesh position={[0, 0, 0.4]}>
+          <sphereGeometry args={[0.3]} />
+          <meshBasicMaterial color="white" />
+      </mesh>
     </group>
   );
 };

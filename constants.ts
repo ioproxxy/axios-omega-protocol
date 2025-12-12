@@ -24,9 +24,3 @@ export const LEVEL_MAP = [
 ];
 
 export const TILE_SIZE = 4;
-
-export const ZONE_CONFIG = {
-  1: { name: "ZONE 1: CRYO WING", fogColor: '#001133', wallColor: '#223344', lightColor: '#00ffff' },
-  2: { name: "ZONE 2: WEAPONS RESEARCH", fogColor: '#331100', wallColor: '#442211', lightColor: '#ff3300' },
-  3: { name: "ZONE 3: CENTRAL NEXUS", fogColor: '#110022', wallColor: '#220033', lightColor: '#cc00ff' }
-};
