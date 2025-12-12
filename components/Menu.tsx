@@ -23,10 +23,10 @@ export const Menu: React.FC<MenuProps> = ({ gameState, startGame, score, onUpgra
             <p className="text-xl text-cyan-500 tracking-[0.5em] mb-8 font-light">PROTOCOL OMEGA</p>
             
             <div className="space-y-4 mb-12 text-gray-400 font-mono text-sm border-l-2 border-cyan-800 pl-4 text-left mx-auto max-w-md">
-              <p>> SYSTEM BOOT...</p>
-              <p>> FACILITY STATUS: CRITICAL</p>
-              <p>> THREAT DETECTED: THE SCOURGE</p>
-              <p>> MISSION: SURVIVE. BREACH. ESCAPE.</p>
+              <p>{'>'} SYSTEM BOOT...</p>
+              <p>{'>'} FACILITY STATUS: CRITICAL</p>
+              <p>{'>'} THREAT DETECTED: THE SCOURGE</p>
+              <p>{'>'} MISSION: SURVIVE. BREACH. ESCAPE.</p>
             </div>
 
             <button 
